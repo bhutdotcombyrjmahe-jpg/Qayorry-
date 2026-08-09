@@ -8,7 +8,7 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_PATH = path.join(__dirname, 'data', 'db.json');
-const UPLOAD_DIR = path.join(__dirname, 'public', 'uploads');
+const UPLOAD_DIR = path.join(__dirname, 'uploads');
 
 // ---------- Fixed admin / order-panel credentials ----------
 const ADMIN_PHONE = '01732543193';
@@ -32,7 +32,7 @@ function todayKey() {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname)); // Main ফোল্ডারকে static বানালাম
 
 function requireAuth(req, res, next) {
   const token = req.headers['authorization']?.replace('Bearer ', '') || req.query.token;
@@ -75,7 +75,7 @@ app.get('/api/products/:id', (req, res) => {
 app.post('/api/products', requireAuth, upload.single('image'), (req, res) => {
   const db = readDB();
   const { title, description, price, rating } = req.body;
-  const image = req.file ? '/uploads/' + req.file.filename : '';
+  const image = req.file? '/uploads/' + req.file.filename : '';
   const product = {
     id: uuidv4(),
     title,
@@ -91,7 +91,7 @@ app.post('/api/products', requireAuth, upload.single('image'), (req, res) => {
 
 app.delete('/api/products/:id', requireAuth, (req, res) => {
   const db = readDB();
-  db.products = db.products.filter((p) => p.id !== req.params.id);
+  db.products = db.products.filter((p) => p.id!== req.params.id);
   writeDB(db);
   res.json({ success: true });
 });
@@ -100,10 +100,10 @@ app.delete('/api/products/:id', requireAuth, (req, res) => {
 app.post('/api/orders', (req, res) => {
   const db = readDB();
   const { items, name, phone, address, area } = req.body;
-  if (!items || !items.length || !name || !phone || !address) {
+  if (!items ||!items.length ||!name ||!phone ||!address) {
     return res.status(400).json({ error: 'তথ্য অসম্পূর্ণ' });
   }
-  const deliveryCharge = area === 'dhaka' ? 100 : 150;
+  const deliveryCharge = area === 'dhaka'? 100 : 150;
   const subtotal = items.reduce((s, it) => s + it.price * it.qty, 0);
   const order = {
     id: uuidv4().slice(0, 8).toUpperCase(),
@@ -132,7 +132,7 @@ app.get('/api/orders', requireAuth, (req, res) => {
 
 app.delete('/api/orders/:id', requireAuth, (req, res) => {
   const db = readDB();
-  db.orders = db.orders.filter((o) => o.id !== req.params.id);
+  db.orders = db.orders.filter((o) => o.id!== req.params.id);
   writeDB(db);
   res.json({ success: true });
 });
@@ -151,7 +151,7 @@ app.post('/api/orders/:id/deliver', requireAuth, (req, res) => {
     date: order.date,
     deliveredDate: new Date().toISOString(),
   });
-  db.orders = db.orders.filter((o) => o.id !== req.params.id);
+  db.orders = db.orders.filter((o) => o.id!== req.params.id);
   writeDB(db);
   res.json({ success: true });
 });
@@ -166,7 +166,7 @@ app.get('/api/clients', requireAuth, (req, res) => {
 app.post('/api/track/visit', (req, res) => {
   const db = readDB();
   const key = todayKey();
-  if (!req.cookies.qv_visited || req.cookies.qv_visited !== key) {
+  if (!req.cookies.qv_visited || req.cookies.qv_visited!== key) {
     db.stats.visits[key] = (db.stats.visits[key] || 0) + 1;
     writeDB(db);
     res.cookie('qv_visited', key, { maxAge: 24 * 60 * 60 * 1000 });
@@ -197,28 +197,29 @@ app.get('/api/stats', requireAuth, (req, res) => {
   });
 });
 
-// ====== পেজ দেখানোর রুট ======
+// ====== পেজ দেখানোর রুট - public/ বাদ দিলাম ======
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+  res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 app.get('/orders', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'orders.html'));
+  res.sendFile(path.join(__dirname, 'orders.html'));
 });
 
 app.get('/cart', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'cart.html'));
+  res.sendFile(path.join(__dirname, 'cart.html'));
 });
 
 app.get('/checkout', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'checkout.html'));
+  res.sendFile(path.join(__dirname, 'checkout.html'));
 });
 // ====== রুট শেষ ======
 
+// শুধু 1 বার listen
 app.listen(PORT, () => {
   console.log(`Qayorra Fragrance server running on http://localhost:${PORT}`);
 });
