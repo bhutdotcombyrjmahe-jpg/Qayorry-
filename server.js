@@ -197,6 +197,28 @@ app.get('/api/stats', requireAuth, (req, res) => {
   });
 });
 
+// ====== পেজ দেখানোর রুট ======
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+app.get('/orders', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'orders.html'));
+});
+
+app.get('/cart', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'cart.html'));
+});
+
+app.get('/checkout', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'checkout.html'));
+});
+// ====== রুট শেষ ======
+
 app.listen(PORT, () => {
   console.log(`Qayorra Fragrance server running on http://localhost:${PORT}`);
 });
