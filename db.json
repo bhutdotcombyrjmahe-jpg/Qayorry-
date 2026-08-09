@@ -1,0 +1,19 @@
+{
+  "products": [
+    {
+      "id": "p1",
+      "title": "Qayorra Royal Oud",
+      "description": "একটি রাজকীয় সুগন্ধি, যা তৈরি হয়েছে বাংলাদেশের সেরা কারিগরদের হাতে। দীর্ঘস্থায়ী ঘ্রাণ এবং প্রিমিয়াম কোয়ালিটির নিশ্চয়তা।",
+      "price": 1200,
+      "rating": 4.8,
+      "image": "/uploads/sample1.jpg"
+    }
+  ],
+  "orders": [],
+  "clients": [],
+  "stats": {
+    "visits": {},
+    "purchases": {},
+    "abandoned": {}
+  }
+}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clients History — Qayorra Fragrance</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header id="siteHeader" class="site-header"></header>
+
+<div class="panel-wrap">
+  <div class="panel-header">
+    <h1>Clients History</h1>
+    <button class="btn btn-outline" onclick="logout()">লগআউট</button>
+  </div>
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr><th>অর্ডার আইডি</th><th>নাম</th><th>ফোন</th><th>ঠিকানা</th><th>মোট মূল্য</th><th>ডেলিভারি তারিখ</th></tr>
+      </thead>
+      <tbody id="clientsBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<footer id="siteFooter" class="site-footer"></footer>
+<script src="/js/common.js"></script>
+<script>
+if (!getToken()) window.location.href = '/clients-login.html?next=/clients.html';
+
+async function loadClients() {
+  const res = await authFetch('/api/clients');
+  const clients = await res.json();
+  const tbody = document.getElementById('clientsBody');
+  if (!clients.length) {
+    tbody.innerHTML = '<tr><td colspan="6">এখনো কোনো ডেলিভারি সম্পন্ন হয়নি।</td></tr>';
+    return;
+  }
+  tbody.innerHTML = clients.slice().reverse().map(c => `
+    <tr>
+      <td>#${c.id}</td>
+      <td>${c.name}</td>
+      <td>${c.phone}</td>
+      <td>${c.address}</td>
+      <td>৳${c.total}</td>
+      <td>${new Date(c.deliveredDate).toLocaleString('bn-BD')}</td>
+    </tr>
+  `).join('');
+}
+
+function logout() {
+  clearToken();
+  window.location.href = '/index.html';
+}
+
+loadClients();
+</script>
+</body>
+</html>
