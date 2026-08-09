@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ড্যাশবোর্ড — Qayorra Fragrance</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header id="siteHeader" class="site-header"></header>
+
+<div class="panel-wrap">
+  <div class="panel-header">
+    <h1>এডমিন ড্যাশবোর্ড</h1>
+    <div style="display:flex;gap:10px;">
+      <a href="/admin.html" class="btn btn-outline">🛍️ প্রোডাক্ট ম্যানেজ</a>
+      <button class="btn btn-outline" onclick="logout()">লগআউট</button>
+    </div>
+  </div>
+
+  <div class="stat-grid" id="statGrid"></div>
+</div>
+
+<footer id="siteFooter" class="site-footer"></footer>
+<script src="/js/common.js"></script>
+<script>
+if (!getToken()) window.location.href = '/dashboard-login.html?next=/dashboard.html';
+
+async function loadStats() {
+  const res = await authFetch('/api/stats');
+  const s = await res.json();
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat-card"><div class="num">${s.productCount}</div><div class="label">মোট প্রোডাক্ট (পেজে আছে)</div></div>
+    <div class="stat-card"><div class="num">${s.visitsToday}</div><div class="label">আজকের ভিজিটর</div></div>
+    <div class="stat-card"><div class="num">${s.purchasesToday}</div><div class="label">আজ যারা অর্ডার করেছে</div></div>
+    <div class="stat-card"><div class="num">${s.abandonedToday}</div><div class="label">আজ যারা না কিনে চলে গেছে</div></div>
+    <div class="stat-card"><div class="num">${s.pendingOrders}</div><div class="label">পেন্ডিং অর্ডার</div></div>
+    <div class="stat-card"><div class="num">${s.deliveredCount}</div><div class="label">মোট ডেলিভারি সম্পন্ন</div></div>
+    <div class="stat-card"><div class="num">${s.visitsAllTime}</div><div class="label">সর্বমোট ভিজিটর (এখন পর্যন্ত)</div></div>
+    <div class="stat-card"><div class="num">${s.purchasesAllTime}</div><div class="label">সর্বমোট অর্ডার (এখন পর্যন্ত)</div></div>
+  `;
+}
+
+function logout() {
+  clearToken();
+  window.location.href = '/index.html';
+}
+
+loadStats();
+</script>
+</body>
+</html>

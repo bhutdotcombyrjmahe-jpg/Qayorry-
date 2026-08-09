@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>আমার কার্ট — Qayorra Fragrance</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header id="siteHeader" class="site-header"></header>
+
+<div class="container" style="padding-top:30px;padding-bottom:60px;max-width:800px;">
+  <div class="section-title" style="margin-top:0;">
+    <h2>আমার কার্ট</h2>
+    <div class="line"></div>
+  </div>
+  <div id="cartItems"></div>
+  <div id="cartSummaryWrap"></div>
+</div>
+
+<div id="floatingBtns" class="floating-btns"></div>
+<footer id="siteFooter" class="site-footer"></footer>
+
+<script src="/js/common.js"></script>
+<script>
+function render() {
+  const cart = getCart();
+  const itemsWrap = document.getElementById('cartItems');
+  const summaryWrap = document.getElementById('cartSummaryWrap');
+
+  if (!cart.length) {
+    itemsWrap.innerHTML = '<div class="empty-state">আপনার কার্ট খালি। <br><a class="btn btn-gold" style="margin-top:16px;display:inline-block;" href="/index.html">শপিং করুন</a></div>';
+    summaryWrap.innerHTML = '';
+    return;
+  }
+
+  itemsWrap.innerHTML = cart.map(c => `
+    <div class="cart-item">
+      <img src="${c.image || '/uploads/sample1.jpg'}">
+      <div class="grow">
+        <h4>${c.title}</h4>
+        <div>৳${c.price} × ${c.qty} = ৳${c.price * c.qty}</div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="doRemove('${c.id}')">সরান</button>
+    </div>
+  `).join('');
+
+  const total = cartTotal();
+  summaryWrap.innerHTML = `
+    <div class="cart-summary">
+      <div class="summary-row total"><span>মোট (ডেলিভারি চার্জ ছাড়া)</span><span>৳${total}</span></div>
+      <button class="btn btn-gold btn-block" style="margin-top:14px;" onclick="window.location.href='/checkout.html'">চেকআউট করুন</button>
+    </div>
+  `;
+}
+
+function doRemove(id) {
+  removeFromCart(id);
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

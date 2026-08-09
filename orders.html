@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>অর্ডার প্যানেল — Qayorra Fragrance</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header id="siteHeader" class="site-header"></header>
+
+<div class="panel-wrap">
+  <div class="panel-header">
+    <h1>অর্ডার প্যানেল</h1>
+    <div style="display:flex;gap:10px;">
+      <a href="/clients-login.html" class="btn btn-outline">👥 Clients History</a>
+      <button class="btn btn-outline" onclick="logout()">লগআউট</button>
+    </div>
+  </div>
+
+  <div id="ordersWrap"></div>
+</div>
+
+<footer id="siteFooter" class="site-footer"></footer>
+<script src="/js/common.js"></script>
+<script>
+if (!getToken()) window.location.href = '/order-login.html?next=/orders.html';
+
+async function loadOrders() {
+  const res = await authFetch('/api/orders');
+  const orders = await res.json();
+  const wrap = document.getElementById('ordersWrap');
+  if (!orders.length) {
+    wrap.innerHTML = '<div class="card"><p>এই মুহূর্তে কোনো নতুন অর্ডার নেই।</p></div>';
+    return;
+  }
+  wrap.innerHTML = orders.map(o => `
+    <div class="order-card">
+      <div class="top-row">
+        <span class="order-id">#${o.id}</span>
+        <span class="status-pill">${o.status === 'pending' ? 'পেন্ডিং' : o.status}</span>
+      </div>
+      <div><strong>${o.name}</strong> — ${o.phone}</div>
+      <div>ঠিকানা: ${o.address} (${o.area === 'dhaka' ? 'ঢাকার ভেতরে' : 'ঢাকার বাইরে'})</div>
+      <div class="order-items">
+        ${o.items.map(it => `${it.title} × ${it.qty} = ৳${it.price * it.qty}`).join('<br>')}
+      </div>
+      <div>ডেলিভারি চার্জ: ৳${o.deliveryCharge} &nbsp; | &nbsp; <strong>সর্বমোট: ৳${o.total}</strong></div>
+      <div style="font-size:12px;color:#888;margin-top:6px;">অর্ডার সময়: ${new Date(o.date).toLocaleString('bn-BD')}</div>
+      <div class="order-actions">
+        <button class="btn btn-success btn-sm" onclick="markDelivered('${o.id}')">✓ ডেলিভারি সম্পন্ন</button>
+        <button class="btn btn-danger btn-sm" onclick="removeOrder('${o.id}')">✕ রিমুভ করুন</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function markDelivered(id) {
+  if (!confirm('এই অর্ডারটি ডেলিভারি সম্পন্ন হিসেবে মার্ক করবেন? এটি Clients History তে চলে যাবে।')) return;
+  await authFetch('/api/orders/' + id + '/deliver', { method: 'POST' });
+  loadOrders();
+}
+
+async function removeOrder(id) {
+  if (!confirm('আপনি কি নিশ্চিত এই অর্ডারটি রিমুভ করতে চান?')) return;
+  await authFetch('/api/orders/' + id, { method: 'DELETE' });
+  loadOrders();
+}
+
+function logout() {
+  clearToken();
+  window.location.href = '/index.html';
+}
+
+loadOrders();
+</script>
+</body>
+</html>

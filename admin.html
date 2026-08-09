@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>এডমিন প্যানেল — Qayorra Fragrance</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header id="siteHeader" class="site-header"></header>
+
+<div class="panel-wrap">
+  <div class="panel-header">
+    <h1>এডমিন প্যানেল — প্রোডাক্ট ম্যানেজমেন্ট</h1>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-gold" onclick="openAddModal()">+ নতুন প্রোডাক্ট যোগ করুন</button>
+      <a href="/dashboard-login.html" class="btn btn-outline">📊 ড্যাশবোর্ড</a>
+      <button class="btn btn-outline" onclick="logout()">লগআউট</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <table class="data-table">
+      <thead>
+        <tr><th>ছবি</th><th>টাইটেল</th><th>দাম</th><th>রেটিং</th><th>বিবরণ</th><th>একশন</th></tr>
+      </thead>
+      <tbody id="productTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal-box">
+    <span class="close-modal" onclick="closeAddModal()">✕</span>
+    <h3>নতুন প্রোডাক্ট যোগ করুন</h3>
+    <form id="addProductForm">
+      <div class="form-group">
+        <label>প্রোডাক্ট ছবি</label>
+        <input type="file" id="pImage" accept="image/*" required>
+      </div>
+      <div class="form-group">
+        <label>টাইটেল</label>
+        <input type="text" id="pTitle" required>
+      </div>
+      <div class="form-group">
+        <label>বিবরণ (Description)</label>
+        <textarea id="pDesc" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label>দাম (৳)</label>
+        <input type="number" id="pPrice" required min="0">
+      </div>
+      <div class="form-group">
+        <label>রেটিং (0-5)</label>
+        <input type="number" id="pRating" min="0" max="5" step="0.1" value="4.5">
+      </div>
+      <button type="submit" class="btn btn-gold btn-block">প্রোডাক্ট যোগ করুন</button>
+      <p class="error-msg" id="addErr"></p>
+    </form>
+  </div>
+</div>
+
+<footer id="siteFooter" class="site-footer"></footer>
+<script src="/js/common.js"></script>
+<script>
+if (!getToken()) window.location.href = '/admin-login.html?next=/admin.html';
+
+async function loadProducts() {
+  const res = await fetch('/api/products');
+  const products = await res.json();
+  const tbody = document.getElementById('productTableBody');
+  if (!products.length) {
+    tbody.innerHTML = '<tr><td colspan="6">কোনো প্রোডাক্ট নেই।</td></tr>';
+    return;
+  }
+  tbody.innerHTML = products.map(p => `
+    <tr>
+      <td><img src="${p.image || '/uploads/sample1.jpg'}"></td>
+      <td>${p.title}</td>
+      <td>৳${p.price}</td>
+      <td>${p.rating}</td>
+      <td style="max-width:220px;">${(p.description||'').slice(0,60)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">রিমুভ</button></td>
+    </tr>
+  `).join('');
+}
+
+async function deleteProduct(id) {
+  if (!confirm('আপনি কি নিশ্চিত এই প্রোডাক্টটি রিমুভ করতে চান?')) return;
+  await authFetch('/api/products/' + id, { method: 'DELETE' });
+  loadProducts();
+}
+
+function openAddModal() { document.getElementById('addModal').classList.add('open'); }
+function closeAddModal() { document.getElementById('addModal').classList.remove('open'); }
+
+document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errEl = document.getElementById('addErr');
+  errEl.style.display = 'none';
+  const fd = new FormData();
+  fd.append('image', document.getElementById('pImage').files[0]);
+  fd.append('title', document.getElementById('pTitle').value);
+  fd.append('description', document.getElementById('pDesc').value);
+  fd.append('price', document.getElementById('pPrice').value);
+  fd.append('rating', document.getElementById('pRating').value);
+
+  try {
+    const res = await authFetch('/api/products', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'ত্রুটি হয়েছে');
+    closeAddModal();
+    document.getElementById('addProductForm').reset();
+    loadProducts();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+  }
+});
+
+function logout() {
+  clearToken();
+  window.location.href = '/index.html';
+}
+
+loadProducts();
+</script>
+</body>
+</html>

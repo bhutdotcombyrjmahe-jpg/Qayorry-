@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>প্রোডাক্ট বিস্তারিত — Qayorra Fragrance</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header id="siteHeader" class="site-header"></header>
+
+<div class="container">
+  <div id="detailWrap" class="product-detail">
+    <p>লোড হচ্ছে...</p>
+  </div>
+</div>
+
+<div id="floatingBtns" class="floating-btns"></div>
+<footer id="siteFooter" class="site-footer"></footer>
+
+<script src="/js/common.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const id = params.get('id');
+let product = null;
+let qty = 1;
+
+async function loadProduct() {
+  const res = await fetch('/api/products/' + id);
+  if (!res.ok) {
+    document.getElementById('detailWrap').innerHTML = '<p>প্রোডাক্টটি পাওয়া যায়নি।</p>';
+    return;
+  }
+  product = await res.json();
+  render();
+}
+
+function render() {
+  document.title = product.title + ' — Qayorra Fragrance';
+  document.getElementById('detailWrap').innerHTML = `
+    <div class="img-wrap"><img src="${product.image || '/uploads/sample1.jpg'}" alt="${product.title}"></div>
+    <div>
+      <h1>${product.title}</h1>
+      <div class="rating">★★★★★ (${product.rating || 4.5} রেটিং)</div>
+      <div class="price">৳${product.price}</div>
+      <p class="desc">${product.description || ''}</p>
+      <div class="qty-row">
+        <span>পরিমাণ:</span>
+        <div class="qty-box">
+          <button onclick="changeQty(-1)">−</button>
+          <span id="qtyVal">1</span>
+          <button onclick="changeQty(1)">+</button>
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-outline" onclick="doAddToCart()">🛒 কার্টে যোগ করুন</button>
+        <button class="btn btn-gold" onclick="orderNow()">অর্ডার করুন</button>
+      </div>
+      <div class="badges">
+        <div class="badge">🚚 ঢাকায় ১০০৳, ঢাকার বাইরে ১৫০৳ ডেলিভারি চার্জ</div>
+        <div class="badge">💵 ফুল ক্যাশ অন ডেলিভারি</div>
+        <div class="badge">↩️ ৭ দিনের রিটার্ন সুবিধা</div>
+      </div>
+    </div>
+  `;
+}
+
+function changeQty(d) {
+  qty = Math.max(1, qty + d);
+  document.getElementById('qtyVal').textContent = qty;
+}
+
+function doAddToCart() {
+  addToCart(product, qty);
+  alert('কার্টে যোগ করা হয়েছে!');
+}
+
+function orderNow() {
+  addToCart(product, qty);
+  window.location.href = '/checkout.html';
+}
+
+loadProduct();
+</script>
+</body>
+</html>

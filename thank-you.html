@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ধন্যবাদ — Qayorra Fragrance</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header id="siteHeader" class="site-header"></header>
+
+<div class="container">
+  <div class="badge-thank">
+    <div class="check">✓</div>
+    <h1 style="font-family:Georgia,serif;font-size:32px;">ধন্যবাদ!</h1>
+    <p style="color:#6b6b6b;margin-top:10px;">আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে।</p>
+    <p style="margin-top:6px;font-weight:700;" id="orderIdText"></p>
+    <p style="color:#6b6b6b;margin-top:16px;">আমরা শীঘ্রই আপনার সাথে যোগাযোগ করে অর্ডার নিশ্চিত করবো। ক্যাশ অন ডেলিভারিতে পেমেন্ট করবেন।</p>
+    <a href="/index.html" class="btn btn-gold" style="margin-top:26px;display:inline-block;">শপিং চালিয়ে যান</a>
+  </div>
+</div>
+
+<div id="floatingBtns" class="floating-btns"></div>
+<footer id="siteFooter" class="site-footer"></footer>
+
+<script src="/js/common.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const orderId = params.get('orderId');
+if (orderId) document.getElementById('orderIdText').textContent = 'অর্ডার নাম্বার: #' + orderId;
+</script>
+</body>
+</html>

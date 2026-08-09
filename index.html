@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qayorra Fragrance by Mahe — বাংলাদেশের রাজকীয় সুগন্ধি</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header id="siteHeader" class="site-header"></header>
+
+<div class="hero-top">
+  <h1>QAYORRA</h1>
+  <p>FRAGRANCE by Mahe — The Royal Scent of Bangladesh</p>
+</div>
+
+<div class="container">
+  <div class="slider" id="productSlider">
+    <div class="slider-track" id="sliderTrack"></div>
+    <button class="slider-arrow prev" id="prevBtn">&#10094;</button>
+    <button class="slider-arrow next" id="nextBtn">&#10095;</button>
+    <div class="slider-dots" id="sliderDots"></div>
+  </div>
+
+  <div class="section-title">
+    <h2>আমাদের সকল প্রোডাক্ট</h2>
+    <div class="line"></div>
+  </div>
+
+  <div class="product-grid" id="productGrid">
+    <p>লোড হচ্ছে...</p>
+  </div>
+</div>
+
+<div id="floatingBtns" class="floating-btns"></div>
+<footer id="siteFooter" class="site-footer"></footer>
+
+<script src="/js/common.js"></script>
+<script>
+let allProducts = [];
+let currentSlide = 0;
+let sliderInterval;
+
+async function loadProducts() {
+  const res = await fetch('/api/products');
+  allProducts = await res.json();
+  renderSlider();
+  renderGrid();
+}
+
+function renderSlider() {
+  const track = document.getElementById('sliderTrack');
+  const dots = document.getElementById('sliderDots');
+  if (!allProducts.length) {
+    document.getElementById('productSlider').style.display = 'none';
+    return;
+  }
+  track.innerHTML = allProducts.map(p => `
+    <div class="slide" onclick="window.location.href='/product.html?id=${p.id}'">
+      <img src="${p.image || '/uploads/sample1.jpg'}" alt="${p.title}">
+      <div class="slide-caption">
+        <h3>${p.title}</h3>
+        <p>৳${p.price}</p>
+      </div>
+    </div>
+  `).join('');
+  dots.innerHTML = allProducts.map((_, i) => `<span data-i="${i}" class="${i===0?'active':''}"></span>`).join('');
+  dots.querySelectorAll('span').forEach(s => s.addEventListener('click', () => goToSlide(Number(s.dataset.i))));
+
+  document.getElementById('prevBtn').onclick = () => goToSlide(currentSlide - 1);
+  document.getElementById('nextBtn').onclick = () => goToSlide(currentSlide + 1);
+
+  startAutoSlide();
+}
+
+function goToSlide(i) {
+  const n = allProducts.length;
+  currentSlide = ((i % n) + n) % n;
+  document.getElementById('sliderTrack').style.transform = `translateX(-${currentSlide * 100}%)`;
+  document.querySelectorAll('#sliderDots span').forEach((d, idx) => d.classList.toggle('active', idx === currentSlide));
+  startAutoSlide();
+}
+
+function startAutoSlide() {
+  clearInterval(sliderInterval);
+  sliderInterval = setInterval(() => goToSlide(currentSlide + 1), 3500);
+}
+
+function renderGrid() {
+  const grid = document.getElementById('productGrid');
+  if (!allProducts.length) {
+    grid.innerHTML = '<p>এখনো কোনো প্রোডাক্ট যোগ করা হয়নি।</p>';
+    return;
+  }
+  grid.innerHTML = allProducts.map(p => `
+    <div class="product-card" onclick="window.location.href='/product.html?id=${p.id}'">
+      <div class="img-wrap"><img src="${p.image || '/uploads/sample1.jpg'}" alt="${p.title}"></div>
+      <div class="info">
+        <h3>${p.title}</h3>
+        <div class="rating">★★★★★ (${p.rating || 4.5})</div>
+        <div class="desc">${p.description || ''}</div>
+        <div class="price">৳${p.price} <span>/ 30ml</span></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+loadProducts();
+</script>
+</body>
+</html>
